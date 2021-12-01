@@ -55,8 +55,8 @@ int main() {
 	file.open("01.txt", ios::in);
 
 	int lastDepth = INT_MAX;
-	int currentDepth;
-	int increases;
+	int currentDepth = 0;
+	int increases = 0;
 
 	while(file) {
 		file >> currentDepth;

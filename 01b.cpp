@@ -42,9 +42,9 @@ int main() {
 	file.open("01.txt", ios::in);
 
 	int depthWindow[3];
-	int depthWindowSum;
+	int depthWindowSum = 0;
 	int lastDepthWindowSum = INT_MAX;
-	int increases;
+	int increases = 0;
 	int* currentDepthSlot = depthWindow;
 
 	// Read the first two entries so the loop is always working on a full window.
