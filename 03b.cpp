@@ -24,7 +24,48 @@ public:
 
 	Node() {}
 	Node(int v) : value(v) {}
+
+	Node* setLeft(int v) {
+		if (left == nullptr) {
+			left = new Node(v);
+		}
+		left->count++;
+		return left;
+	}
+
+	Node* setRight(int v) {
+		if (right == nullptr) {
+			right = new Node(v);
+		}
+		right->count++;
+		return right;
+	}
 };
+
+int calculateRating(Node* currentNode, int numBits, bool useMostCommonBit) {
+	int rating = 0;
+	int bitPos = 0;
+
+	for (int i = 0; i < numBits; i++) {
+		bitPos = numBits - 1 - i;
+		// Calculate rating by walking the tree
+		// If the node only has one child, just follow that
+		if (currentNode->left == nullptr) {
+			currentNode = currentNode->right;
+		} else if (currentNode->right == nullptr) {
+			currentNode = currentNode->left;
+		} else if (useMostCommonBit) {
+			// Both children are present, choose the most common
+			currentNode = currentNode->right->count >= currentNode->left->count ? currentNode->right : currentNode->left;
+		} else {
+			// Both children are present, choose the least common
+			currentNode = currentNode->right->count < currentNode->left->count ? currentNode->right : currentNode->left;
+		}
+		rating = rating | (currentNode->value << bitPos);
+	}
+
+	return rating;
+}
 
 int main() {
 	fstream file("03.txt", ios::in);
@@ -38,78 +79,18 @@ int main() {
 
 	do {
 		Node* currentNode = tree;
-		Node* nextNode = nullptr;
 
 		int i = 0;
 		for (const char& c : input) {
 			int bit = static_cast<int>(c - '0');
 
 			// Advance down the tree and add nodes as needed
-			nextNode = bit == 0 ? currentNode->left : currentNode->right;
-			if (nextNode == nullptr) {
-				nextNode = new Node(bit);
-				if (bit == 0) {
-					currentNode->left = nextNode;
-				} else {
-					currentNode->right = nextNode;
-				}
-			}
-			currentNode = nextNode;
-			currentNode->count++;
+			currentNode = bit == 0 ? currentNode->setLeft(bit) : currentNode->setRight(bit);
 		}
 	} while (file >> input);
 
-	int o2Rating = 0;
-	int co2Rating = 0;
-	int bitPos = 0;
-	Node* currentNode = tree;
-	for (int i = 0; i < numBits; i++) {
-		bitPos = numBits - 1 - i;
-		// Calculate o2Rating by walking the tree
-		// If the node only has one child, just follow that
-		if (currentNode->left == nullptr) {
-			currentNode = currentNode->right;
-		} else if (currentNode->right == nullptr) {
-			currentNode = currentNode->left;
-		} else{
-			// Both children are present, choose the most common
-			currentNode = currentNode->right->count >= currentNode->left->count ? currentNode->right : currentNode->left;
-		}
-		o2Rating = o2Rating | (currentNode->value << bitPos);
-	}
-
-	currentNode = tree;
-	bitPos = 0;
-	for (int i = 0; i < numBits; i++) {
-		bitPos = numBits - 1 - i;
-		// Calculate co2Rating by walking the tree
-		// If the node only has one child, just follow that
-		if (currentNode->left == nullptr) {
-			currentNode = currentNode->right;
-		} else if (currentNode->right == nullptr) {
-			currentNode = currentNode->left;
-		} else{
-			// Both children are present, choose the most common
-			currentNode = currentNode->right->count < currentNode->left->count ? currentNode->right : currentNode->left;
-		}
-		co2Rating = co2Rating | (currentNode->value << bitPos);
-	}
-
+	int o2Rating = calculateRating(tree, numBits, true);
+	int co2Rating = calculateRating(tree, numBits, false);
 
 	cout << o2Rating << ", " << co2Rating << ". Power consumption: " << (o2Rating * co2Rating) << endl;
-
-	// Test the tree
-	/* Node* node = tree; */
-	/* char dir; */
-	/* while(true) { */
-	/* 	cout << "Direction: "; */
-	/* 	cin >> dir; */
-	/* 	if (dir == 'x') { */
-	/* 		node = tree; */
-	/* 		cout << endl; */
-	/* 	} else { */
-	/* 		node = dir == '0' ? node->left : node->right; */
-	/* 		cout << node->value << " " << node->count << endl; */
-	/* 	} */
-	/* } */
 }
