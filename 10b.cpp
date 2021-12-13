@@ -54,7 +54,7 @@ unordered_map<char, int> scoring {{'(',1}, {'[',2}, {'{',3}, {'<',4}};
 
 // Instead of just storing the current chunkOpener, store all open chunkOpeners.
 // When we run out of characters, we can just close out whatever's left
-uintmax_t processChunk(stack<char>& chunkOpeners, string_view& input, int indent = 1) {
+intmax_t processChunk(stack<char>& chunkOpeners, string_view& input, int indent = 1) {
 	string indentString;
 	for (int i = 0; i < indent - 1; i++) {
 		indentString += " ";
@@ -69,7 +69,7 @@ uintmax_t processChunk(stack<char>& chunkOpeners, string_view& input, int indent
 			cout << indentString << " " << c << endl;
 			// Process the chunk within this
 			chunkOpeners.push(c);
-			uintmax_t result = processChunk(chunkOpeners, input, indent + 1);
+			intmax_t result = processChunk(chunkOpeners, input, indent + 1);
 			if (result != 0) {
 				return result;
 			}
@@ -91,15 +91,9 @@ uintmax_t processChunk(stack<char>& chunkOpeners, string_view& input, int indent
 	return 0; // No corrupt elements found
 }
 
-/*
-Something weird happens here.
-Within the function, the score appears to be correct. I'm using uintmax_t because some scores are larger than INT_MAX.
-However, when the numbers are returned and stored in the vector, some of them get garbled.
-So for now I just solved the puzzle by taking the printed output from this function and pasting it into Excel.
- */
 // Just pop everything off and add up the scores for the corresponding chars.
 uintmax_t closeChunks(stack<char>& chunkOpeners) {
-	uintmax_t score = 0;
+	intmax_t score = 0;
 	char chunkOpener;
 	cout << "Closing open chunks: ";
 	while (chunkOpeners.size() > 0) {
@@ -116,11 +110,11 @@ uintmax_t closeChunks(stack<char>& chunkOpeners) {
 // I need to modify this so that within each line it process CHUNKS.
 // I don't think I need to change much, just make it so that each time we open a chunk,
 // we recurse and process that bit.
-uintmax_t processLine(string& input) {
+intmax_t processLine(string& input) {
 	cout << "Processing: " << input << endl;
 
 	stack<char> chunkOpeners;
-	uintmax_t score = 0;
+	intmax_t score = 0;
 	string_view sv(input);
 
 	while (sv.length() > 0 && score == 0) {
@@ -134,7 +128,7 @@ uintmax_t processLine(string& input) {
 
 	if (score == 0) {
 		cout << input << " needs to be completed. It has " << chunkOpeners.size() << " open chunks." << endl;
-		return closeChunks(chunkOpeners);
+		score = closeChunks(chunkOpeners);
 	}
 
 	return score;
@@ -143,8 +137,8 @@ uintmax_t processLine(string& input) {
 int main() {
 	fstream file("10.txt", ios::in);
 	string inputBuffer;
-	vector<uintmax_t> scores;
-	uintmax_t lineScore = 0;
+	vector<intmax_t> scores;
+	intmax_t lineScore = 0;
 
 	while (getline(file, inputBuffer)) {
 		lineScore = processLine(inputBuffer);
@@ -154,11 +148,7 @@ int main() {
 	}
 
 	sort(scores.begin(), scores.end());
-	// See what scores we got
-	for (uintmax_t score : scores) {
-		cout << "Score: " << score << endl;
-	}
 
-	uintmax_t middleScore = scores[scores.size() / 2];
+	intmax_t middleScore = scores[scores.size() / 2];
 	cout << "Middle score is " << middleScore << endl;
 }
