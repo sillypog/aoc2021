@@ -68,11 +68,14 @@ void doStep(unordered_map<string, uintmax_t>& polymer, unordered_map<string, cha
 }
 
 /*
-We have to count the first AND second element of each pair because we don't know which was the last element
-of the polymer - if we only took the first element of each pair we'd miss the last element of the polymer.
-Counting both means we double count though so will have to halve.
+We know that whatever the last element of the initial polymer was will be the last element of the final
+polymer because nothing ever gets added after that, only before it as it is always the second element in
+a pair.
+
+So we can just count the first element in each pair, then add one to whichever element was the inital
+last element.
  */
-unordered_map<char, uintmax_t> getElementOccurrence(const unordered_map<string, uintmax_t>& polymer) {
+unordered_map<char, uintmax_t> getElementOccurrence(const unordered_map<string, uintmax_t>& polymer, char lastElement) {
 	unordered_map<char, uintmax_t> occurrences;
 
 	for (const pair<string, uintmax_t>& pair : polymer) {
@@ -82,19 +85,9 @@ unordered_map<char, uintmax_t> getElementOccurrence(const unordered_map<string, 
 		} else {
 			occurrences.insert({pair.first[0], pair.second});
 		}
-
-		// Count the second element of the pair
-		if (occurrences.count(pair.first[1])) {
-			occurrences.at(pair.first[1]) += pair.second;
-		} else {
-			occurrences.insert({pair.first[1], pair.second});
-		}
 	}
 
-	// Halve the occurrences as we double counted
-	for (auto& occurrence : occurrences) {
-		occurrence.second = ceil(occurrence.second / 2.0);
-	}
+	occurrences.at(lastElement)++; // No pair has the last element in first position, add separately.
 
 	return occurrences;
 }
@@ -102,6 +95,7 @@ unordered_map<char, uintmax_t> getElementOccurrence(const unordered_map<string, 
 int main() {
 	unordered_map<string, uintmax_t> polymer;
 	unordered_map<string, char> pairs;
+	char lastElement;
 
 	fstream file("14.txt", ios::in);
 
@@ -116,6 +110,7 @@ int main() {
 			processPair(inputBuffer, pairs);
 		} else {
 			createPolymer(inputBuffer, polymer);
+			lastElement = inputBuffer[inputBuffer.length() - 1];
 		}
 	}
 
@@ -123,7 +118,7 @@ int main() {
 		doStep(polymer, pairs);
 	}
 
-	unordered_map<char, uintmax_t> elementOccurrences = getElementOccurrence(polymer);
+	unordered_map<char, uintmax_t> elementOccurrences = getElementOccurrence(polymer, lastElement);
 	pair<char, uintmax_t> least {'!', std::numeric_limits<uintmax_t>::max()};
 	pair<char, uintmax_t> most {'!', 0};
 	for (pair<char, uintmax_t> elementOccurrence : elementOccurrences) {
